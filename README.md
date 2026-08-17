@@ -62,14 +62,20 @@ and condition from `.s-card__subtitle`.
 3. Click **Load unpacked** and select this folder.
 
 ## Publishing to the Chrome Web Store
-The code is store-ready (icons, MV3, minimal permissions). To publish:
-1. Zip the extension: `zip -r ebay-seller-feedback-filter.zip . -x '.git/*'`.
-2. Register a Chrome Web Store developer account (one-time $5 fee).
-3. At the [Developer Dashboard](https://chrome.google.com/webstore/devconsole),
-   upload the zip, add screenshots + a description, and complete the privacy
-   form: **no data collected**, permission `storage` justified as "saving user
-   settings."
-4. Submit for review (typically a few days).
+The code is store-ready (MV3, icons, minimal permissions, no remote code).
+See **[STORE_LISTING.md](STORE_LISTING.md)** for the full listing copy,
+permission justifications, and step-by-step submission, and
+**[PRIVACY.md](PRIVACY.md)** for the privacy policy.
+
+Build the upload package (runtime files only):
+
+```bash
+zip -rq ebay-seller-feedback-filter.zip manifest.json content.js popup.html popup.js icons -x '*.DS_Store'
+```
+
+Then upload `ebay-seller-feedback-filter.zip` at the
+[Developer Dashboard](https://chrome.google.com/webstore/devconsole) — a
+one-time $5 developer registration is required.
 
 ## Files
 - `manifest.json` — MV3 config, icons, content-script matches.
