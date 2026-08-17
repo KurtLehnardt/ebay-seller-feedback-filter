@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "eBay Seller Feedback Filter",
+  "version": "1.0.0",
+  "description": "Hide eBay listings from sellers below a minimum feedback count and positive-rating percentage.",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "eBay Seller Feedback Filter"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.ebay.com/*",
+        "*://*.ebay.co.uk/*",
+        "*://*.ebay.ca/*",
+        "*://*.ebay.com.au/*",
+        "*://*.ebay.de/*",
+        "*://*.ebay.fr/*",
+        "*://*.ebay.it/*",
+        "*://*.ebay.es/*"
+      ],
+      "run_at": "document_idle",
+      "js": ["content.js"]
+    }
+  ]
+}
