@@ -10,6 +10,16 @@ no account, no API key — install and it just works, 100% on-device.**
 - **Min feedback count** — default **50**, changeable.
 - **Hide listings with no seller rating** — optional (off by default).
 
+### Filter by condition
+Independently include or exclude each condition bucket (all included by
+default). Excluded conditions are hidden from the page:
+- **New / Open Box** — `new`, `new (unsealed)`, `open box`.
+- **Used / Refurbished** — `used`, `refurbished`.
+- **For parts / not working** — `for parts`, `not working`, `spares or repair`, etc.
+
+Listings whose condition can't be read are left visible (never hidden by this
+filter).
+
 ### Highlight the best deal (optional toggle)
 Ranks the *visible* listings and marks the winner with a green ⭐ badge, then
 **pins it to the top of the results**. The score combines:

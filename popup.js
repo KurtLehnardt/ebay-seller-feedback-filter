@@ -5,6 +5,9 @@ const DEFAULTS = {
   minFeedback: 50,
   hideUnknown: false,
   bestDeal: false,
+  condNew: true,
+  condUsed: true,
+  condParts: true,
 };
 
 const el = {
@@ -13,6 +16,9 @@ const el = {
   minFeedback: document.getElementById("minFeedback"),
   hideUnknown: document.getElementById("hideUnknown"),
   bestDeal: document.getElementById("bestDeal"),
+  condNew: document.getElementById("condNew"),
+  condUsed: document.getElementById("condUsed"),
+  condParts: document.getElementById("condParts"),
   hidden: document.getElementById("hidden"),
   total: document.getElementById("total"),
   best: document.getElementById("best"),
@@ -25,6 +31,9 @@ chrome.storage.sync.get(DEFAULTS, (s) => {
   el.minFeedback.value = s.minFeedback;
   el.hideUnknown.checked = s.hideUnknown;
   el.bestDeal.checked = s.bestDeal;
+  el.condNew.checked = s.condNew;
+  el.condUsed.checked = s.condUsed;
+  el.condParts.checked = s.condParts;
 });
 
 /* Persist on any change, then refresh the on-page stats. */
@@ -43,13 +52,16 @@ function save() {
       minFeedback: cnt,
       hideUnknown: el.hideUnknown.checked,
       bestDeal: el.bestDeal.checked,
+      condNew: el.condNew.checked,
+      condUsed: el.condUsed.checked,
+      condParts: el.condParts.checked,
     },
     // Give the content script a beat to re-run before re-reading stats.
     () => setTimeout(refreshStats, 350)
   );
 }
 
-for (const id of ["enabled", "minPercent", "minFeedback", "hideUnknown", "bestDeal"]) {
+for (const id of ["enabled", "minPercent", "minFeedback", "hideUnknown", "bestDeal", "condNew", "condUsed", "condParts"]) {
   el[id].addEventListener("change", save);
 }
 

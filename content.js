@@ -14,6 +14,9 @@
     minFeedback: 50,    // hide sellers with fewer than this many feedbacks
     hideUnknown: false, // hide listings where no seller rating is shown
     bestDeal: false,    // highlight best deal & pin it to the top
+    condNew: true,      // include New / Open Box / New (unsealed)
+    condUsed: true,     // include Used / Refurbished
+    condParts: true,    // include For parts or not working
   };
 
   const LISTING_SELECTOR = "li.s-card";
@@ -116,8 +119,25 @@
 
   /* ---------- filtering (seller quality) ---------- */
 
-  function shouldHide(info) {
+  // Collapse the granular conditions into the three user-facing buckets.
+  function conditionBucket(c) {
+    if (c === "for_parts") return "parts";
+    if (c === "used" || c === "refurbished") return "used";
+    if (c === "new" || c === "new_unsealed" || c === "open_box") return "new";
+    return null; // unknown / unclassified — not governed by the condition filter
+  }
+
+  function isConditionExcluded(c) {
+    const b = conditionBucket(c);
+    if (b === "new") return !settings.condNew;
+    if (b === "used") return !settings.condUsed;
+    if (b === "parts") return !settings.condParts;
+    return false;
+  }
+
+  function shouldHide(info, condition) {
     if (!settings.enabled) return false;
+    if (isConditionExcluded(condition)) return true;
     if (!info) return settings.hideUnknown;
     return info.percent < settings.minPercent || info.count < settings.minFeedback;
   }
@@ -240,7 +260,8 @@
 
     for (const li of items) {
       const info = extractSellerInfo(li);
-      const hide = shouldHide(info);
+      const condition = parseCondition(li);
+      const hide = shouldHide(info, condition);
       li.classList.toggle(HIDDEN_CLASS, hide);
       if (info) li.dataset.esfSeller = `${info.percent}% · ${info.count.toLocaleString()}`;
       if (hide) {
@@ -251,7 +272,7 @@
         li,
         info,
         price: parsePrice(li),
-        condition: parseCondition(li),
+        condition,
         title: getTitle(li),
       });
     }
