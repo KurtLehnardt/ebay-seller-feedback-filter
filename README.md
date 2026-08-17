@@ -20,6 +20,12 @@ default). Excluded conditions are hidden from the page:
 Listings whose condition can't be read are left visible (never hidden by this
 filter).
 
+### Filter by listing type
+**Include auctions** (default on) — uncheck to hide auction listings and show
+only Buy It Now / fixed-price. Auctions are detected by their countdown timer
+(`6d 4h 22m`) or bid count. An auction's price is a moving *current bid*, so
+auctions are **always excluded from best-deal ranking** regardless of this toggle.
+
 ### Highlight the best deal (optional toggle)
 Ranks the *visible* listings and marks the winner with a green ⭐ badge, then
 **pins it to the top of the results**. The score combines:

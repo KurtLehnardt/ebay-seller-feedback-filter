@@ -17,6 +17,7 @@
     condNew: true,      // include New / Open Box / New (unsealed)
     condUsed: true,     // include Used / Refurbished
     condParts: true,    // include For parts or not working
+    includeAuctions: true, // include auctions (bid prices always skip best-deal)
   };
 
   const LISTING_SELECTOR = "li.s-card";
@@ -124,6 +125,17 @@
     return "unknown";
   }
 
+  // Auction = shows a countdown timer ("6d 4h 22m") or a bid count, vs a fixed
+  // Buy It Now price. The current bid is not a final price.
+  function isAuction(li) {
+    const t = li.textContent;
+    if (/\b\d+\s+bids?\b/i.test(t)) return true;
+    if (/\b\d{1,2}d\s+\d{1,2}h\b/i.test(t)) return true;
+    if (/\b\d{1,2}h\s+\d{1,2}m\b/i.test(t)) return true;
+    if (/\b\d{1,2}m\s+\d{1,2}s\b/i.test(t)) return true;
+    return false;
+  }
+
   /* ---------- filtering (seller quality) ---------- */
 
   // Collapse the granular conditions into the three user-facing buckets.
@@ -142,8 +154,9 @@
     return false;
   }
 
-  function shouldHide(info, condition) {
+  function shouldHide(info, condition, auction) {
     if (!settings.enabled) return false;
+    if (auction && !settings.includeAuctions) return true;
     if (isConditionExcluded(condition)) return true;
     if (!info) return settings.hideUnknown;
     return info.percent < settings.minPercent || info.count < settings.minFeedback;
@@ -168,7 +181,7 @@
     const priced = candidates.filter((c) => c.price && isFinite(c.price.total));
     // Never eligible: broken ("for parts / not working") or accessory listings.
     const eligible = priced.filter(
-      (c) => c.condition !== "for_parts" && !ACCESSORY_RE.test(c.title)
+      (c) => !c.auction && c.condition !== "for_parts" && !ACCESSORY_RE.test(c.title)
     );
     if (eligible.length === 0) return null;
 
@@ -268,7 +281,8 @@
     for (const li of items) {
       const info = extractSellerInfo(li);
       const condition = parseCondition(li);
-      const hide = shouldHide(info, condition);
+      const auction = isAuction(li);
+      const hide = shouldHide(info, condition, auction);
       li.classList.toggle(HIDDEN_CLASS, hide);
       if (info) li.dataset.esfSeller = `${info.percent}% · ${info.count.toLocaleString()}`;
       if (hide) {
@@ -281,6 +295,7 @@
         price: parsePrice(li),
         condition,
         title: getTitle(li),
+        auction,
       });
     }
 

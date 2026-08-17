@@ -8,6 +8,7 @@ const DEFAULTS = {
   condNew: true,
   condUsed: true,
   condParts: true,
+  includeAuctions: true,
 };
 
 const el = {
@@ -19,6 +20,7 @@ const el = {
   condNew: document.getElementById("condNew"),
   condUsed: document.getElementById("condUsed"),
   condParts: document.getElementById("condParts"),
+  includeAuctions: document.getElementById("includeAuctions"),
   reload: document.getElementById("reload"),
   hidden: document.getElementById("hidden"),
   total: document.getElementById("total"),
@@ -35,6 +37,7 @@ chrome.storage.sync.get(DEFAULTS, (s) => {
   el.condNew.checked = s.condNew;
   el.condUsed.checked = s.condUsed;
   el.condParts.checked = s.condParts;
+  el.includeAuctions.checked = s.includeAuctions;
 });
 
 /* Read + validate the form into a settings object (and reflect clamped
@@ -59,6 +62,7 @@ function collect() {
     condNew: el.condNew.checked,
     condUsed: el.condUsed.checked,
     condParts: el.condParts.checked,
+    includeAuctions: el.includeAuctions.checked,
   };
 }
 
@@ -99,7 +103,7 @@ function save() {
   persist(() => setTimeout(() => message("getStats"), 200));
 }
 
-for (const id of ["enabled", "minPercent", "minFeedback", "hideUnknown", "bestDeal", "condNew", "condUsed", "condParts"]) {
+for (const id of ["enabled", "minPercent", "minFeedback", "hideUnknown", "bestDeal", "condNew", "condUsed", "condParts", "includeAuctions"]) {
   el[id].addEventListener("change", save);
 }
 
