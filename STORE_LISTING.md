@@ -75,9 +75,16 @@ shot isn't already 1280×800, pad/resize it to those dimensions.
 
 ## Privacy tab
 
-**Single purpose** (one sentence)
+**Single purpose**
+
+Short (one line):
 ```
-Filter eBay search results by seller feedback, condition, and listing type, and highlight the best-value listing.
+Refine eBay search results so the shopper can quickly find trustworthy, good-value listings.
+```
+
+Full (ties every feature to the one purpose — use if there's room):
+```
+This extension has a single purpose: to help a shopper evaluate eBay search-results pages and find trustworthy, good-value listings. It does this by hiding results that fall below the user's chosen criteria (seller feedback rating, item condition, and listing type) and by highlighting the single best-value listing among those that remain. Every feature serves this one goal of refining eBay search results — the extension does nothing outside of eBay search pages.
 ```
 
 **Permission justifications**
@@ -85,9 +92,9 @@ Filter eBay search results by seller feedback, condition, and listing type, and 
 ```
 Stores the user's filter thresholds and toggle preferences so they persist between sessions and sync across the user's Chrome profile.
 ```
-- Host access to eBay domains (from content_scripts `matches`)
+- Host access to eBay search pages (from content_scripts `matches`, scoped to `/sch/` paths)
 ```
-The extension's single purpose is to filter and re-rank eBay search results. It needs to read and modify the search-results page on eBay domains to hide listings that don't meet the user's seller/condition/listing-type criteria and to highlight the best-value listing. No page data is transmitted anywhere.
+The extension's single purpose is to filter and re-rank eBay search results. Its content script is scoped to eBay search-results pages only (the /sch/ path) — it does not run on item, account, or checkout pages. On those search pages it reads and modifies the results list to hide listings that don't meet the user's seller/condition/listing-type criteria and to highlight the best-value listing. Nothing is transmitted anywhere; all processing is local.
 ```
 
 **Remote code:** No — the extension executes no remotely hosted code.

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "eBay Seller Feedback Filter",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Hide eBay listings from low-feedback sellers and highlight the best deal (price, condition & seller trust). No setup, runs locally.",
   "permissions": ["storage"],
   "icons": {
@@ -23,14 +23,14 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.ebay.com/*",
-        "*://*.ebay.co.uk/*",
-        "*://*.ebay.ca/*",
-        "*://*.ebay.com.au/*",
-        "*://*.ebay.de/*",
-        "*://*.ebay.fr/*",
-        "*://*.ebay.it/*",
-        "*://*.ebay.es/*"
+        "*://*.ebay.com/sch/*",
+        "*://*.ebay.co.uk/sch/*",
+        "*://*.ebay.ca/sch/*",
+        "*://*.ebay.com.au/sch/*",
+        "*://*.ebay.de/sch/*",
+        "*://*.ebay.fr/sch/*",
+        "*://*.ebay.it/sch/*",
+        "*://*.ebay.es/sch/*"
       ],
       "run_at": "document_idle",
       "js": ["content.js"]
