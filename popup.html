@@ -7,10 +7,11 @@
   <style>
     :root { color-scheme: light dark; }
     body {
-      width: 280px; margin: 0; padding: 14px 16px;
+      width: 288px; margin: 0; padding: 14px 16px;
       font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
     }
     h1 { font-size: 14px; margin: 0 0 12px; }
+    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #888; margin: 14px 0 4px; }
     .row { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; gap: 10px; }
     .row label { flex: 1; }
     input[type="number"] { width: 84px; padding: 5px 6px; box-sizing: border-box; text-align: right; }
@@ -19,6 +20,7 @@
     hr { border: none; border-top: 1px solid rgba(128,128,128,.3); margin: 12px 0; }
     #stats { font-weight: 600; }
     #stats .n { color: #d93025; }
+    #best { margin-top: 6px; font-weight: 600; color: #1a8f2a; }
   </style>
 </head>
 <body>
@@ -29,23 +31,30 @@
     <input type="checkbox" id="enabled" />
   </div>
 
+  <h2>Hide low-feedback sellers</h2>
   <div class="row">
     <label for="minPercent">Min positive rating %</label>
     <input type="number" id="minPercent" min="0" max="100" step="0.1" />
   </div>
-
   <div class="row">
     <label for="minFeedback">Min feedback count</label>
     <input type="number" id="minFeedback" min="0" step="1" />
   </div>
-
   <div class="row">
     <label for="hideUnknown">Hide listings with no seller rating</label>
     <input type="checkbox" id="hideUnknown" />
   </div>
 
+  <h2>Best deal</h2>
+  <div class="row">
+    <label for="bestDeal">Highlight best deal &amp; pin to top</label>
+    <input type="checkbox" id="bestDeal" />
+  </div>
+  <p class="hint">Ranks visible listings by price, condition &amp; seller trust — no setup, runs entirely on your device.</p>
+
   <hr />
   <div id="stats">On this page: <span class="n" id="hidden">–</span> hidden of <span id="total">–</span></div>
+  <div id="best"></div>
   <p class="hint">Click the 🛡️ badge on the page to peek at what was filtered.</p>
 
   <script src="popup.js"></script>

@@ -1,13 +1,21 @@
 /* Popup UI — reads/writes settings and shows live per-page stats. */
-const DEFAULTS = { enabled: true, minPercent: 98, minFeedback: 50, hideUnknown: false };
+const DEFAULTS = {
+  enabled: true,
+  minPercent: 98,
+  minFeedback: 50,
+  hideUnknown: false,
+  bestDeal: false,
+};
 
 const el = {
   enabled: document.getElementById("enabled"),
   minPercent: document.getElementById("minPercent"),
   minFeedback: document.getElementById("minFeedback"),
   hideUnknown: document.getElementById("hideUnknown"),
+  bestDeal: document.getElementById("bestDeal"),
   hidden: document.getElementById("hidden"),
   total: document.getElementById("total"),
+  best: document.getElementById("best"),
 };
 
 /* Load saved settings into the form. */
@@ -16,6 +24,7 @@ chrome.storage.sync.get(DEFAULTS, (s) => {
   el.minPercent.value = s.minPercent;
   el.minFeedback.value = s.minFeedback;
   el.hideUnknown.checked = s.hideUnknown;
+  el.bestDeal.checked = s.bestDeal;
 });
 
 /* Persist on any change, then refresh the on-page stats. */
@@ -33,13 +42,14 @@ function save() {
       minPercent: pct,
       minFeedback: cnt,
       hideUnknown: el.hideUnknown.checked,
+      bestDeal: el.bestDeal.checked,
     },
     // Give the content script a beat to re-run before re-reading stats.
     () => setTimeout(refreshStats, 350)
   );
 }
 
-for (const id of ["enabled", "minPercent", "minFeedback", "hideUnknown"]) {
+for (const id of ["enabled", "minPercent", "minFeedback", "hideUnknown", "bestDeal"]) {
   el[id].addEventListener("change", save);
 }
 
@@ -49,6 +59,7 @@ for (const id of ["enabled", "minPercent", "minFeedback", "hideUnknown"]) {
  * supported eBay page. No answer => not injected => show n/a. */
 function setNA() {
   el.hidden.textContent = el.total.textContent = "n/a";
+  el.best.textContent = "";
 }
 
 function refreshStats() {
@@ -59,6 +70,7 @@ function refreshStats() {
       if (chrome.runtime.lastError || !res) return setNA();
       el.hidden.textContent = res.hidden;
       el.total.textContent = res.total;
+      el.best.textContent = res.best ? "⭐ " + res.best : "";
     });
   });
 }
