@@ -21,6 +21,13 @@
     #stats { font-weight: 600; }
     #stats .n { color: #d93025; }
     #best { margin-top: 6px; font-weight: 600; color: #1a8f2a; }
+    button#reload {
+      width: 100%; margin-top: 10px; padding: 9px 10px;
+      font: 600 13px/1 inherit; cursor: pointer; color: #fff;
+      background: #1a73e8; border: none; border-radius: 6px;
+    }
+    button#reload:hover { background: #1666d0; }
+    button#reload:active { transform: translateY(1px); }
   </style>
 </head>
 <body>
@@ -65,6 +72,8 @@
     <input type="checkbox" id="bestDeal" />
   </div>
   <p class="hint">Ranks visible listings by price, condition &amp; seller trust — no setup, runs entirely on your device.</p>
+
+  <button id="reload" type="button">⟳ Reload items</button>
 
   <hr />
   <div id="stats">On this page: <span class="n" id="hidden">–</span> hidden of <span id="total">–</span></div>

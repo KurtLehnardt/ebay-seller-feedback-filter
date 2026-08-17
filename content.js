@@ -394,7 +394,10 @@
     });
 
     chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-      if (msg && msg.type === "getStats") {
+      if (msg && msg.type === "rescan") {
+        run(); // re-filter & re-rank the current page live — no page reload
+      }
+      if (msg && (msg.type === "getStats" || msg.type === "rescan")) {
         sendResponse({ hidden: lastStats.hidden, total: lastStats.total, best: lastStats.best });
       }
       return true;

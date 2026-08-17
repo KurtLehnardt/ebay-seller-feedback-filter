@@ -19,6 +19,7 @@ const el = {
   condNew: document.getElementById("condNew"),
   condUsed: document.getElementById("condUsed"),
   condParts: document.getElementById("condParts"),
+  reload: document.getElementById("reload"),
   hidden: document.getElementById("hidden"),
   total: document.getElementById("total"),
   best: document.getElementById("best"),
@@ -36,8 +37,9 @@ chrome.storage.sync.get(DEFAULTS, (s) => {
   el.condParts.checked = s.condParts;
 });
 
-/* Persist on any change, then refresh the on-page stats. */
-function save() {
+/* Read + validate the form into a settings object (and reflect clamped
+ * numbers back into the fields). */
+function collect() {
   let pct = parseFloat(el.minPercent.value);
   if (!isFinite(pct)) pct = DEFAULTS.minPercent;
   pct = Math.min(100, Math.max(0, pct));
@@ -45,46 +47,71 @@ function save() {
   let cnt = parseInt(el.minFeedback.value, 10);
   if (!isFinite(cnt) || cnt < 0) cnt = DEFAULTS.minFeedback;
 
-  chrome.storage.sync.set(
-    {
-      enabled: el.enabled.checked,
-      minPercent: pct,
-      minFeedback: cnt,
-      hideUnknown: el.hideUnknown.checked,
-      bestDeal: el.bestDeal.checked,
-      condNew: el.condNew.checked,
-      condUsed: el.condUsed.checked,
-      condParts: el.condParts.checked,
-    },
-    // Give the content script a beat to re-run before re-reading stats.
-    () => setTimeout(refreshStats, 350)
-  );
+  el.minPercent.value = pct;
+  el.minFeedback.value = cnt;
+
+  return {
+    enabled: el.enabled.checked,
+    minPercent: pct,
+    minFeedback: cnt,
+    hideUnknown: el.hideUnknown.checked,
+    bestDeal: el.bestDeal.checked,
+    condNew: el.condNew.checked,
+    condUsed: el.condUsed.checked,
+    condParts: el.condParts.checked,
+  };
+}
+
+function persist(cb) {
+  chrome.storage.sync.set(collect(), cb);
+}
+
+function showStats(res) {
+  el.hidden.textContent = res.hidden;
+  el.total.textContent = res.total;
+  el.best.textContent = res.best ? "⭐ " + res.best : "";
+}
+
+function setNA() {
+  el.hidden.textContent = el.total.textContent = "n/a";
+  el.best.textContent = "";
+}
+
+/* Message the active tab's content script. type "rescan" forces an immediate
+ * re-filter/re-rank; "getStats" just reads. We don't inspect tab.url (that
+ * needs the "tabs" permission) — a reply means we're on a supported page. */
+function message(type, cb) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (!tab) return setNA();
+    chrome.tabs.sendMessage(tab.id, { type }, (res) => {
+      if (chrome.runtime.lastError || !res) return setNA();
+      showStats(res);
+      if (cb) cb(res);
+    });
+  });
+}
+
+/* Auto-apply on any change (checkboxes apply instantly; number fields on blur
+ * or Enter). The Reload button covers value edits that haven't blurred yet and
+ * forces a re-scan even when nothing changed. */
+function save() {
+  persist(() => setTimeout(() => message("getStats"), 200));
 }
 
 for (const id of ["enabled", "minPercent", "minFeedback", "hideUnknown", "bestDeal", "condNew", "condUsed", "condParts"]) {
   el[id].addEventListener("change", save);
 }
 
-/* Pull live stats from the active tab's content script.
- * We deliberately do NOT read tab.url (that requires the "tabs" permission);
- * instead we just message the content script — if it answers, we're on a
- * supported eBay page. No answer => not injected => show n/a. */
-function setNA() {
-  el.hidden.textContent = el.total.textContent = "n/a";
-  el.best.textContent = "";
-}
+el.reload.addEventListener("click", () => {
+  const b = el.reload;
+  const orig = b.textContent;
+  persist(() =>
+    message("rescan", () => {
+      b.textContent = "⟳ Reloaded ✓";
+      setTimeout(() => (b.textContent = orig), 1000);
+    })
+  );
+});
 
-function refreshStats() {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const tab = tabs[0];
-    if (!tab) return setNA();
-    chrome.tabs.sendMessage(tab.id, { type: "getStats" }, (res) => {
-      if (chrome.runtime.lastError || !res) return setNA();
-      el.hidden.textContent = res.hidden;
-      el.total.textContent = res.total;
-      el.best.textContent = res.best ? "⭐ " + res.best : "";
-    });
-  });
-}
-
-refreshStats();
+message("getStats");

@@ -35,6 +35,8 @@ real, like-for-like product. Toggling it off restores the original order.
 ### Also
 - On-page **🛡️ badge** showing `hidden / total`; click to peek at what was
   filtered (red dashed outline + the seller's stats).
+- **Reload items** button re-applies filters/ranking to the current page
+  instantly — no page refresh (toggles also apply live).
 - Works across dynamic loads / pagination via a `MutationObserver`.
 - Settings sync via `chrome.storage.sync`.
 
