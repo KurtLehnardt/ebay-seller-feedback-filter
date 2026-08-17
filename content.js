@@ -32,13 +32,19 @@
     new: 1.0,
     new_unsealed: 0.9,
     open_box: 0.85,
+    refurbished: 0.75,
     unknown: 0.7,
     used: 0.6,
+    for_parts: 0.0, // excluded from best-deal entirely; kept for completeness
   };
 
   // Titles matching these are not the primary product (accessories, PCs, eGPUs).
   const ACCESSORY_RE =
     /\b(box only|holder|bracket|stand|riser|extension cable|adapter|cable|water\s?block|backplate|block for|cooler|power supply|psu|mouse\s?pad|sticker|keychain|anti[-\s]?sag|support stick|card holder|xg mobile|egpu|thunderbolt|gaming pc|prebuilt|pre-built|desktop|full system|complete pc|ryzen|core i[3579])\b/i;
+
+  // "For parts or not working" and equivalents — never a "deal".
+  const BROKEN_RE =
+    /\b(for parts|not working|non[-\s]?working|spares?\s+or\s+repair|parts only|does\s?n'?t work|does not work|for repair)\b/i;
 
   let settings = { ...DEFAULTS };
   let observer = null;
@@ -91,11 +97,14 @@
   }
 
   function parseCondition(li) {
+    // Scan the whole card — the "for parts" flag can render outside the subtitle.
+    if (BROKEN_RE.test(li.textContent)) return "for_parts";
     const sub = li.querySelector(".s-card__subtitle");
     const t = (sub ? sub.textContent : "").toLowerCase();
     if (/open box/.test(t)) return "open_box";
     if (/unsealed/.test(t)) return "new_unsealed";
-    if (/pre-?owned|used|refurb/.test(t)) return "used";
+    if (/refurb/.test(t)) return "refurbished";
+    if (/pre-?owned|used/.test(t)) return "used";
     if (/new/.test(t)) return "new";
     return "unknown";
   }
@@ -130,20 +139,21 @@
   // candidates: [{ li, info, price:{total}, condition, title }]
   function pickBestDeal(candidates) {
     const priced = candidates.filter((c) => c.price && isFinite(c.price.total));
-    if (priced.length === 0) return null;
+    // Never eligible: broken ("for parts / not working") or accessory listings.
+    const eligible = priced.filter(
+      (c) => c.condition !== "for_parts" && !ACCESSORY_RE.test(c.title)
+    );
+    if (eligible.length === 0) return null;
 
-    // Cohort = the comparable-product band. Median-anchored: drop far-cheap
-    // accessories and troll/typo highs, plus accessory-titled listings.
-    const med = median(priced.map((c) => c.price.total));
+    // Cohort = the comparable-product band. Median-anchored over *eligible*
+    // items so cheap broken/accessory listings can't drag the band down.
+    const med = median(eligible.map((c) => c.price.total));
     const lowCut = 0.35 * med;
     const highCut = 4 * med;
-    let cohort = priced.filter(
-      (c) =>
-        c.price.total >= lowCut &&
-        c.price.total <= highCut &&
-        !ACCESSORY_RE.test(c.title)
+    let cohort = eligible.filter(
+      (c) => c.price.total >= lowCut && c.price.total <= highCut
     );
-    if (cohort.length === 0) cohort = priced;
+    if (cohort.length === 0) cohort = eligible;
 
     const totals = cohort.map((c) => c.price.total);
     const min = Math.min(...totals);

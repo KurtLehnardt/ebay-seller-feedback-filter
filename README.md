@@ -62,6 +62,8 @@ The code is store-ready (icons, MV3, minimal permissions). To publish:
 ## Notes / decisions
 - Best-deal picks only from **visible** (non-hidden) listings, so a low-trust
   seller can never win even if it's cheapest.
+- Listings marked **For parts / not working** (and accessories) are never
+  eligible to be the best deal, no matter how cheap.
 - Unparseable-seller listings are **shown** by default (so a layout change never
   silently drops legit results); flip *Hide listings with no seller rating* to
   be stricter.
