@@ -45,9 +45,11 @@
   const ACCESSORY_RE =
     /\b(box only|holder|bracket|stand|riser|extension cable|adapter|cable|water\s?block|backplate|block for|cooler|power supply|psu|mouse\s?pad|sticker|keychain|anti[-\s]?sag|support stick|card holder|xg mobile|egpu|thunderbolt|gaming pc|prebuilt|pre-built|desktop|full system|complete pc|ryzen|core i[3579])\b/i;
 
-  // "For parts or not working" and equivalents — never a "deal".
+  // "For parts or not working" / "Parts Only" etc. Substring match (no \b):
+  // eBay glues a clipped "Opens in a new window or tab" a11y span onto adjacent
+  // text with no whitespace, which would defeat word boundaries.
   const BROKEN_RE =
-    /\b(for parts|not working|non[-\s]?working|spares?\s+or\s+repair|parts only|does\s?n'?t work|does not work|for repair)\b/i;
+    /for parts|not working|non[-\s]?working|spares? or repair|parts only|does ?n'?t work|does not work|for repair/i;
 
   let settings = { ...DEFAULTS };
   let observer = null;
@@ -99,22 +101,27 @@
     return { base, shipping, total: base + shipping };
   }
 
+  function getTitle(li) {
+    const el = li.querySelector(".s-card__title");
+    const text = el ? el.textContent : "";
+    // Strip eBay's clipped "Opens in a new window or tab" a11y text so it can't
+    // glue onto real words.
+    return text.replace(/Opens in a new window or tab/gi, " ").replace(/\s+/g, " ").trim();
+  }
+
   function parseCondition(li) {
-    // Scan the whole card — the "for parts" flag can render outside the subtitle.
-    if (BROKEN_RE.test(li.textContent)) return "for_parts";
+    // Condition renders as the first "·"-separated segment of the subtitle
+    // (e.g. "Parts Only · …"), which is clean. Fall back to the (de-glued) title.
     const sub = li.querySelector(".s-card__subtitle");
-    const t = (sub ? sub.textContent : "").toLowerCase();
+    const subT = sub ? sub.textContent : "";
+    if (BROKEN_RE.test(subT) || BROKEN_RE.test(getTitle(li))) return "for_parts";
+    const t = subT.toLowerCase();
     if (/open box/.test(t)) return "open_box";
     if (/unsealed/.test(t)) return "new_unsealed";
     if (/refurb/.test(t)) return "refurbished";
     if (/pre-?owned|used/.test(t)) return "used";
     if (/new/.test(t)) return "new";
     return "unknown";
-  }
-
-  function getTitle(li) {
-    const el = li.querySelector(".s-card__title");
-    return el ? el.textContent : "";
   }
 
   /* ---------- filtering (seller quality) ---------- */
