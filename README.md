@@ -88,6 +88,9 @@ one-time $5 developer registration is required.
   seller can never win even if it's cheapest.
 - Listings marked **For parts / not working** (and accessories) are never
   eligible to be the best deal, no matter how cheap.
+- When a listing's **title and condition field disagree** (e.g. title says
+  "Used" but the field says "Brand New"), the more pessimistic condition is
+  used — so a mislabeled item can't win on an undeserved "new" bonus.
 - Unparseable-seller listings are **shown** by default (so a layout change never
   silently drops legit results); flip *Hide listings with no seller rating* to
   be stricter.

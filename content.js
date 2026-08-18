@@ -110,19 +110,31 @@
     return text.replace(/Opens in a new window or tab/gi, " ").replace(/\s+/g, " ").trim();
   }
 
-  function parseCondition(li) {
-    // Condition renders as the first "·"-separated segment of the subtitle
-    // (e.g. "Parts Only · …"), which is clean. Fall back to the (de-glued) title.
-    const sub = li.querySelector(".s-card__subtitle");
-    const subT = sub ? sub.textContent : "";
-    if (BROKEN_RE.test(subT) || BROKEN_RE.test(getTitle(li))) return "for_parts";
-    const t = subT.toLowerCase();
+  // Classify one text blob into a condition key, or null if it carries no signal.
+  function conditionFromText(t) {
+    if (BROKEN_RE.test(t)) return "for_parts";
     if (/open box/.test(t)) return "open_box";
     if (/unsealed/.test(t)) return "new_unsealed";
     if (/refurb/.test(t)) return "refurbished";
-    if (/pre-?owned|used/.test(t)) return "used";
-    if (/new/.test(t)) return "new";
-    return "unknown";
+    if (/\bpre-?owned\b/.test(t)) return "used";
+    // "used" — but not "unused" / "never used" / "not used" (those emphasize new).
+    if (/\bused\b/.test(t) && !/\bunused\b|\bnever (been )?used\b|\bnot used\b/.test(t)) return "used";
+    if (/\bnew\b/.test(t)) return "new";
+    return null;
+  }
+
+  function parseCondition(li) {
+    // eBay's condition field lives in the subtitle; the title sometimes tells a
+    // different story ("Used …" listed as "Brand New"). Read both and keep the
+    // more pessimistic (lower-weight) signal so a mislabel can't earn a bonus.
+    const sub = li.querySelector(".s-card__subtitle");
+    const subCond = conditionFromText((sub ? sub.textContent : "").toLowerCase());
+    const titleCond = conditionFromText(getTitle(li).toLowerCase());
+    const cands = [subCond, titleCond].filter(Boolean);
+    if (cands.length === 0) return "unknown";
+    return cands.reduce((worst, c) =>
+      (CONDITION_WEIGHT[c] ?? 0.7) < (CONDITION_WEIGHT[worst] ?? 0.7) ? c : worst
+    );
   }
 
   // Auction = shows a countdown timer ("6d 4h 22m") or a bid count, vs a fixed
